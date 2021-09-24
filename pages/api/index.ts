@@ -1,20 +1,12 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
-import Metascaper, { Metadata } from 'metascraper'
-import metascaperTitle from 'metascraper-title'
-import metascaperImage from 'metascraper-image'
-import metascaperDescription from 'metascraper-description'
 import fetch from 'node-fetch'
-
-const metascaper = Metascaper([
-  metascaperTitle(), 
-  metascaperImage(),
-  metascaperDescription()
-])
+import cheerio from 'cheerio'
 
 type Data = {
   error?: string
-  data?: Metadata
+  meta?: {[key: string]: string}
+  'jsonLD'?: {[key: string]: string}
 }
 
 export default async function handler(
@@ -29,9 +21,31 @@ export default async function handler(
   }
 
   const html = await fetch(url).then(res => res.text())
-  const data = await metascaper({ url, html })
+  const $ = cheerio.load(html)
 
-  // stale-while-revalidate for a week
+  const meta: Data['meta'] = {}
+
+  $('meta').each((i, el) => { 
+    const { name, content, property } = el.attribs
+    if (name && content) {
+      meta[name] = content
+    }
+    if (property && content) {
+      meta[property] = content
+    }
+  })
+
+  const jsonLDStr = $('[type="application/ld+json"]').html()
+  console.log({jsonLDStr})
+  
+  let jsonLD: Data['jsonLD']
+
+  if (jsonLDStr) {
+    try {
+      jsonLD = JSON.parse(jsonLDStr)
+    } catch {}
+  }
+  
   res.setHeader('Cache-Control', 's-maxage=604800, stale-while-revalidate')
-  res.json({data})
+  res.json({meta, jsonLD})
 }
