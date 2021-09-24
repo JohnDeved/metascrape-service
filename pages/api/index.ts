@@ -36,7 +36,6 @@ export default async function handler(
   })
 
   const jsonLDStr = $('[type="application/ld+json"]').html()
-  console.log({jsonLDStr})
   
   let jsonLD: Data['jsonLD']
 
@@ -45,7 +44,7 @@ export default async function handler(
       jsonLD = JSON.parse(jsonLDStr)
     } catch {}
   }
-  
+
   res.setHeader('Cache-Control', 's-maxage=604800, stale-while-revalidate')
   res.json({meta, jsonLD})
 }
