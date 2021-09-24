@@ -51,6 +51,9 @@ export default async function handler(
     } catch {}
   }
 
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Headers', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   res.setHeader('Cache-Control', 's-maxage=604800, stale-while-revalidate')
   res.json({meta, jsonLD})
 }
