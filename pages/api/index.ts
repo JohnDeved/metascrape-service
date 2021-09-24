@@ -20,7 +20,13 @@ export default async function handler(
     return
   }
 
-  const html = await fetch(url).then(res => res.text())
+  const html = await fetch(url).then(res => res.text()).catch(() => '')
+  
+  if (!html) {
+    res.status(400).json({ error: 'could not load url' })
+    return
+  }
+
   const $ = cheerio.load(html)
 
   const meta: Data['meta'] = {}
