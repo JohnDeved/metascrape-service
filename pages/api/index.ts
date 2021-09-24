@@ -27,8 +27,11 @@ export default async function handler(
     res.status(400).json({ error: 'url is required' })
     return
   }
-  
+
   const html = await fetch(url).then(res => res.text())
   const data = await metascaper({ url, html })
+
+  // stale-while-revalidate for a week
+  res.setHeader('Cache-Control', 's-maxage=604800, stale-while-revalidate')
   res.json({data})
 }
