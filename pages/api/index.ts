@@ -5,8 +5,13 @@ import cheerio from 'cheerio'
 
 type Data = {
   error?: string
-  meta?: {[key: string]: string}
-  'jsonLD'?: {[key: string]: string}
+  meta?: Record<string, string>
+  jsonLD?: Record<string, string>
+  headers?: Record<string, string[]>
+  status?: {
+    code: number
+    message: string
+  }
 }
 
 export default async function handler(
@@ -20,7 +25,13 @@ export default async function handler(
     return
   }
 
-  const html = await fetch(url).then(res => res.text()).catch(() => '')
+  const targetRes = await fetch(url)
+  const headers = targetRes.headers.raw()
+  const status = {
+    code: targetRes.status,
+    message: targetRes.statusText,
+  }
+  const html = await targetRes.text().catch(() => '')
   
   if (!html) {
     res.status(400).json({ error: 'could not load url' })
@@ -55,5 +66,5 @@ export default async function handler(
   res.setHeader('Access-Control-Allow-Headers', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   res.setHeader('Cache-Control', 's-maxage=604800, stale-while-revalidate')
-  res.json({meta, jsonLD})
+  res.json({ meta, jsonLD, headers, status })
 }
