@@ -9,21 +9,30 @@ type Data = {
   jsonLD?: Record<string, string>
   json?: Record<string, string>
   headers?: Record<string, string[]>
+  scrape?: Record<string, {
+    text?: string
+    html?: string | null
+    attr?: Record<string, string>
+  }[]>
   status?: {
     code: number
     message: string
   }
 }
 
+function cors (res: NextApiResponse) {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Headers', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  res.setHeader('Cache-Control', 's-maxage=604800, stale-while-revalidate')
-  const url = req.query.url
+  cors(res)
+  const { url, ...scrapes } = req.query
 
   if (typeof url !== 'string') {
     res.status(400).json({ error: 'url is required' })
@@ -86,5 +95,21 @@ export default async function handler(
     } catch {}
   }
 
-  res.json({ meta, jsonLD, headers, status })
+  let scrape: Data['scrape']
+  if (scrapes) {
+    for (const key in scrapes) {
+      if (Object.prototype.hasOwnProperty.call(scrapes, key)) {
+        const query = scrapes[key]
+        if (typeof query !== 'string') continue
+        if (!scrape) scrape = {}
+        scrape[key] = $(query).map((i, el) => ({
+          text: $(el).text(),
+          html: $(el).html(),
+          attr: $(el).attr(),
+        })).get()
+      }
+    }
+  }
+
+  res.json({ scrape, meta, jsonLD, headers, status })
 }
