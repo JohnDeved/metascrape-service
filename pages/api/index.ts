@@ -25,12 +25,14 @@ export default async function handler(
     return
   }
 
+  const optionsRes = await fetch(url, { method: 'OPTIONS' })
+  const status = {
+    code: optionsRes.status,
+    message: optionsRes.statusText,
+  }
+
   const targetRes = await fetch(url)
   const headers = targetRes.headers.raw()
-  const status = {
-    code: targetRes.status,
-    message: targetRes.statusText,
-  }
   const html = await targetRes.text().catch(() => '')
   
   if (!html) {
