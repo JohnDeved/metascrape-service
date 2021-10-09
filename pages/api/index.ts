@@ -19,6 +19,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Headers', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.setHeader('Cache-Control', 's-maxage=604800, stale-while-revalidate')
   const url = req.query.url
 
   if (typeof url !== 'string') {
@@ -76,16 +80,11 @@ export default async function handler(
   const jsonLDStr = $('[type="application/ld+json"]').html()
   
   let jsonLD: Data['jsonLD']
-
   if (jsonLDStr) {
     try {
       jsonLD = JSON.parse(jsonLDStr)
     } catch {}
   }
 
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Headers', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  res.setHeader('Cache-Control', 's-maxage=604800, stale-while-revalidate')
   res.json({ meta, jsonLD, headers, status })
 }
