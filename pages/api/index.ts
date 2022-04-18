@@ -6,6 +6,10 @@ import cheerio from 'cheerio'
 type Data = {
   error?: string
   meta?: Record<string, string>
+  favicons?: {
+    rel: string
+    href: string
+  }[]
   jsonLD?: Record<string, string>
   json?: Record<string, string>
   headers?: Record<string, string[]>
@@ -25,6 +29,10 @@ function cors (res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
   res.setHeader('Access-Control-Allow-Credentials', 'true')
+}
+
+function prefixRelativeUrls (url: string, baseUrl: string) {
+  return url.replace(/^\/?/, `${baseUrl.replace(/\/$/, '')}/`)
 }
 
 export default async function handler(
@@ -86,6 +94,15 @@ export default async function handler(
     }
   })
 
+  let favicons: Data['favicons']
+  $('link[rel*=icon]').each((i, el) => {
+    if (!favicons) favicons = []
+    favicons.push({
+      rel: el.attribs.rel,
+      href: prefixRelativeUrls(el.attribs.href, url),
+    })
+  })
+
   const jsonLDStr = $('[type="application/ld+json"]').html()
   
   let jsonLD: Data['jsonLD']
@@ -111,5 +128,5 @@ export default async function handler(
     }
   }
 
-  res.json({ scrape, meta, jsonLD, headers, status })
+  res.json({ scrape, favicons, meta, jsonLD, headers, status })
 }
