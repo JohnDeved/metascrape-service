@@ -31,6 +31,10 @@ function cors (res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Credentials', 'true')
 }
 
+function cache (res: NextApiResponse) {
+  res.setHeader('Cache-Control', 's-maxage=31536000, stale-while-revalidate')
+}
+
 function prefixRelativeUrls (url: string, baseUrl: string) {
   return url.replace(/^\/?/, `${baseUrl.replace(/\/$/, '')}/`)
 }
@@ -40,6 +44,8 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   cors(res)
+  cache(res)
+
   const { url, ...scrapes } = req.query
 
   if (typeof url !== 'string') {
