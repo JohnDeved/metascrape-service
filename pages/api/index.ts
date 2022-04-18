@@ -36,6 +36,7 @@ function cache (res: NextApiResponse) {
 }
 
 function prefixRelativeUrls (url: string, baseUrl: string) {
+  if (url.startsWith('http')) return url
   return url.replace(/^\/?/, `${baseUrl.replace(/\/$/, '')}/`)
 }
 
