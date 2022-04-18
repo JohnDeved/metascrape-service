@@ -53,15 +53,15 @@ export default async function handler(
     return
   }
 
-  const optionsRes = await fetch(url, { method: 'OPTIONS' }).catch(() => undefined)
-  if (!optionsRes) {
+  const headRes = await fetch(url, { method: 'HEAD' }).catch(() => undefined)
+  if (!headRes) {
     res.status(400).json({ error: 'could not load url' })
     return
   }
 
   const status = {
-    code: optionsRes.status,
-    message: optionsRes.statusText,
+    code: headRes.status,
+    message: headRes.statusText,
   }
 
   const targetRes = await fetch(url)
