@@ -10,7 +10,7 @@ const Home: NextPage = () => {
       <code className={styles.code}>/api?url={'<'}targetUrl{'>'}</code>
 
       <p style={{paddingTop: "35px"}}>custom scrapes can be defined as such:</p>
-      <code className={styles.code}>/api?url={'<'}targetUrl{'>'}&allImgurImags=image[src*=imgur.com]</code>
+      <code className={styles.code}>/api?url={'<'}targetUrl{'>'}&allImgurImags=img[src*=imgur]</code>
     </div>
   )
 }
